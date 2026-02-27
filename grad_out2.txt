@@ -1,0 +1,30 @@
+﻿Loss: 0.4361
+GradNorm: 0.4244
+Loss dict: {'L1': 0.2662103772163391, 'SSIM_Loss': 0.9844855666160583, 'Freq_Loss': 0.13364675641059875, 'Chroma_Loss': 0.11605677008628845, 'Total': 0.43605202436447144}
+
+  OK    y_branch.proj_in.0.weight                     grad_mean=2.74e-05 grad_max=2.11e-04
+  OK    y_branch.spatial_block.0.block.0.weight       grad_mean=3.97e-07 grad_max=1.88e-05
+  OK    y_branch.spatial_block.0.block.2.weight       grad_mean=7.10e-07 grad_max=4.77e-06
+  OK    y_branch.spatial_block.0.block.4.weight       grad_mean=1.23e-06 grad_max=2.04e-05
+  OK    y_branch.spatial_block.1.block.0.weight       grad_mean=4.20e-07 grad_max=2.45e-05
+  OK    y_branch.spatial_block.1.block.2.weight       grad_mean=7.62e-07 grad_max=5.20e-06
+  OK    y_branch.spatial_block.1.block.4.weight       grad_mean=1.25e-06 grad_max=2.55e-05
+  OK    y_branch.fft_block.mlp.0.weight               grad_mean=2.96e-10 grad_max=3.90e-09
+  OK    y_branch.fft_block.mlp.2.weight               grad_mean=1.80e-09 grad_max=3.97e-08
+  OK    y_branch.fft_block.mlp.2.bias                 grad_mean=2.31e-06 grad_max=1.80e-05
+  OK    y_branch.proj_out.weight                      grad_mean=6.36e-04 grad_max=8.32e-03
+  OK    y_branch.proj_out.bias                        grad_mean=2.34e-02 grad_max=4.44e-02
+  OK    y_branch.aa_conv.weight                       grad_mean=1.79e-02 grad_max=2.40e-02
+  OK    uv_branch.y_proj.weight                       grad_mean=6.05e-07 grad_max=1.05e-05
+  DEAD  uv_branch.global_context.0.weight             grad_mean=0.00e+00 grad_max=0.00e+00
+  DEAD  uv_branch.global_context.0.bias               grad_mean=0.00e+00 grad_max=0.00e+00
+  OK    uv_branch.global_context.2.weight             grad_mean=2.71e-06 grad_max=1.47e-05
+  OK    uv_branch.global_context.2.bias               grad_mean=3.21e-05 grad_max=7.98e-05
+  OK    uv_branch.net.0.weight                        grad_mean=1.17e-06 grad_max=1.18e-05
+  OK    uv_branch.net.0.bias                          grad_mean=5.58e-05 grad_max=1.91e-04
+  OK    uv_branch.net.2.weight                        grad_mean=5.79e-06 grad_max=2.86e-05
+  OK    uv_branch.net.2.bias                          grad_mean=2.08e-04 grad_max=5.10e-04
+  OK    uv_branch.net.4.weight                        grad_mean=4.86e-03 grad_max=1.98e-02
+  OK    uv_branch.net.4.bias                          grad_mean=2.61e-01 grad_max=3.90e-01
+
+Summary: 22/24 params alive, 2 dead, 0 NaN

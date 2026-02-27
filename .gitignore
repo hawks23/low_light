@@ -1,0 +1,21 @@
+# Dataset
+images/
+data/
+datasets/
+
+# Model weights
+*.pt
+*.pth
+*.ckpt
+
+# Python
+__pycache__/
+*.pyc
+
+# Logs
+runs/
+logs/
+
+# OS
+.DS_Store
+Thumbs.db

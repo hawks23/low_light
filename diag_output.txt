@@ -1,0 +1,100 @@
+Device: cuda
+
+============================================================
+TEST 1: Dataset Pairing
+============================================================
+Low: 349, High: 349, Match: True
+  [0] 0001.jpg                       <-> 0001.jpg                       OK
+  [1] 0002.jpg                       <-> 0002.jpg                       OK
+  [2] 0003.jpg                       <-> 0003.jpg                       OK
+  [3] 0004.jpg                       <-> 0004.jpg                       OK
+  [4] 0005.jpg                       <-> 0005.jpg                       OK
+  [5] 0006.jpg                       <-> 0006.jpg                       OK
+  [6] 0007.jpg                       <-> 0007.jpg                       OK
+  [7] 0008.jpg                       <-> 0008.jpg                       OK
+  [8] 0009.jpg                       <-> 0009.jpg                       OK
+  [9] 0010.jpg                       <-> 0010.jpg                       OK
+  [10] 0011.jpg                       <-> 0011.jpg                       OK
+  [11] 0012.jpg                       <-> 0012.jpg                       OK
+  [12] 0013.jpg                       <-> 0013.jpg                       OK
+  [13] 0014.jpg                       <-> 0014.jpg                       OK
+  [14] 0015.jpg                       <-> 0015.jpg                       OK
+
+============================================================
+TEST 2: Image Statistics
+============================================================
+  0001.jpg            : low_mean=0.1535 high_mean=0.5448 ratio=3.5x near_zero=36.0%
+  0002.jpg            : low_mean=0.1888 high_mean=0.6093 ratio=3.2x near_zero=13.8%
+  0003.jpg            : low_mean=0.1869 high_mean=0.4096 ratio=2.2x near_zero=20.7%
+  0004.jpg            : low_mean=0.2330 high_mean=0.4261 ratio=1.8x near_zero=24.3%
+  0005.jpg            : low_mean=0.2473 high_mean=0.5781 ratio=2.3x near_zero=6.9%
+
+============================================================
+TEST 3: Y-channel darkness
+============================================================
+  0001.jpg            : Y_mean=0.1498 <0.01:52.2% <0.05:75.6% <0.10:77.0%
+  0002.jpg            : Y_mean=0.1844 <0.01:12.2% <0.05:54.4% <0.10:66.2%
+  0003.jpg            : Y_mean=0.1828 <0.01:22.5% <0.05:61.8% <0.10:72.4%
+
+============================================================
+TEST 4: AMP vs FP32 gradients (256x256 crop)
+============================================================
+  AMP:  Loss=0.3222 GradNorm=nan NaN_grads=18/18 Scale=65536.0
+  Params with NaN/Inf grads under AMP:
+    X y_branch.proj_in.0.weight
+    X y_branch.spatial_block.0.block.0.weight
+    X y_branch.spatial_block.0.block.2.weight
+    X y_branch.spatial_block.0.block.4.weight
+    X y_branch.spatial_block.1.block.0.weight
+    X y_branch.spatial_block.1.block.2.weight
+    X y_branch.spatial_block.1.block.4.weight
+    X y_branch.fft_block.mlp.0.weight
+    X y_branch.fft_block.mlp.2.weight
+    X y_branch.fft_block.mlp.2.bias
+    X y_branch.proj_out.weight
+    X y_branch.proj_out.bias
+    X uv_branch.net.0.weight
+    X uv_branch.net.0.bias
+    X uv_branch.net.2.weight
+    X uv_branch.net.2.bias
+    X uv_branch.net.4.weight
+    X uv_branch.net.4.bias
+  FP32: Loss=0.3307 GradNorm=1.2692 NaN_grads=0/18
+
+  Per-layer gradients (FP32):
+    y_branch.proj_in.0.weight                     | grad_mean=0.00000000 grad_max=0.000000
+    y_branch.spatial_block.0.block.0.weight       | grad_mean=0.00000000 grad_max=0.000000
+    y_branch.spatial_block.0.block.2.weight       | grad_mean=0.00000000 grad_max=0.000000
+    y_branch.spatial_block.0.block.4.weight       | grad_mean=0.00000000 grad_max=0.000000
+    y_branch.spatial_block.1.block.0.weight       | grad_mean=0.00000000 grad_max=0.000000
+    y_branch.spatial_block.1.block.2.weight       | grad_mean=0.00000000 grad_max=0.000000
+    y_branch.spatial_block.1.block.4.weight       | grad_mean=0.00000000 grad_max=0.000000
+    y_branch.fft_block.mlp.0.weight               | grad_mean=0.00000000 grad_max=0.000000
+    y_branch.fft_block.mlp.2.weight               | grad_mean=0.00000000 grad_max=0.000000
+    y_branch.fft_block.mlp.2.bias                 | grad_mean=0.00000000 grad_max=0.000000
+    y_branch.proj_out.weight                      | grad_mean=0.07569288 grad_max=0.293222
+    y_branch.proj_out.bias                        | grad_mean=0.27074742 grad_max=0.270747
+    uv_branch.net.0.weight                        | grad_mean=0.00000000 grad_max=0.000000
+    uv_branch.net.0.bias                          | grad_mean=0.00000000 grad_max=0.000000
+    uv_branch.net.2.weight                        | grad_mean=0.00000000 grad_max=0.000000
+    uv_branch.net.2.bias                          | grad_mean=0.00000000 grad_max=0.000000
+    uv_branch.net.4.weight                        | grad_mean=0.00661665 grad_max=0.022807
+    uv_branch.net.4.bias                          | grad_mean=0.28405795 grad_max=0.420999
+
+============================================================
+TEST 5: Multiplicative vs Additive gradient strength
+============================================================
+  y=0.005 (very dark ): mult_grad=-0.003161 add_grad=-1.000000 ratio=316x
+  y=0.020 (dark      ): mult_grad=-0.012642 add_grad=-1.000000 ratio=79x
+  y=0.100 (medium    ): mult_grad=-0.063211 add_grad=-1.000000 ratio=16x
+  y=0.300 (moderate  ): mult_grad=-0.189634 add_grad=-1.000000 ratio=5x
+
+============================================================
+DIAGNOSIS SUMMARY
+============================================================
+ISSUE 1: GradNorm=nan -> AMP (fp16) + FFT produces NaN gradients
+  Fix: Force FFT block to always compute in fp32.
+ISSUE 2: Multiplicative Y branch has vanishing gradients for dark pixels
+  y_enh = y * softplus(delta): when y ~ 0, gradient ~ y ~ 0
+  Fix: Switch to hybrid: y_enh = y * scale + offset
+

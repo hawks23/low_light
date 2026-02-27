@@ -1,0 +1,11 @@
+# Core deep learning framework
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Image processing and data loading
+pillow>=10.0.0
+tqdm>=4.66.0
+
+# Inference metrics and profiling (required by inference.py)
+torcheval>=0.0.7
+ptflops>=0.7.3
