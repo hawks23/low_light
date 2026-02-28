@@ -1,31 +1,32 @@
-Loss: 0.4375
-GradNorm: 0.4294
-Loss dict: {'L1': 0.2676039934158325, 'SSIM_Loss': 0.9843239784240723, 'Freq_Loss': 0.133956640958786, 'Chroma_Loss': 0.11611506342887878, 'Total': 0.4374895691871643}
+Loss: 0.4374
+GradNorm: 0.4316
+Loss dict: {'L1': 0.2675807774066925, 'SSIM_Loss': 0.9838207960128784, 'Freq_Loss': 0.133980393409729, 'Chroma_Loss': 0.11612225323915482, 'Total': 0.4374220371246338}
 
-  OK    y_branch.proj_in.0.weight                     grad_mean=2.67e-05 grad_max=1.87e-04
-  OK    y_branch.spatial_block.0.block.0.weight       grad_mean=4.13e-07 grad_max=2.18e-05
-  OK    y_branch.spatial_block.0.block.2.weight       grad_mean=7.02e-07 grad_max=5.14e-06
-  OK    y_branch.spatial_block.0.block.4.weight       grad_mean=1.13e-06 grad_max=2.96e-05
-  OK    y_branch.spatial_block.1.block.0.weight       grad_mean=3.35e-07 grad_max=1.38e-05
-  OK    y_branch.spatial_block.1.block.2.weight       grad_mean=5.19e-07 grad_max=4.99e-06
-  OK    y_branch.spatial_block.1.block.4.weight       grad_mean=9.56e-07 grad_max=1.82e-05
-  OK    y_branch.fft_block.mlp.0.weight               grad_mean=9.08e-10 grad_max=1.06e-08
-  OK    y_branch.fft_block.mlp.2.weight               grad_mean=4.73e-09 grad_max=1.34e-07
-  OK    y_branch.fft_block.mlp.2.bias                 grad_mean=3.49e-06 grad_max=3.65e-05
-  OK    y_branch.proj_out.weight                      grad_mean=8.10e-04 grad_max=8.77e-03
-  OK    y_branch.proj_out.bias                        grad_mean=2.35e-02 grad_max=4.45e-02
-  OK    y_branch.aa_conv.weight                       grad_mean=1.78e-02 grad_max=2.37e-02
-  OK    uv_branch.y_proj.weight                       grad_mean=1.37e-06 grad_max=1.33e-05
-  OK    uv_branch.global_context.0.weight             grad_mean=7.54e-10 grad_max=6.18e-09
-  OK    uv_branch.global_context.0.bias               grad_mean=5.56e-08 grad_max=1.69e-07
-  OK    uv_branch.global_context.2.weight             grad_mean=3.83e-06 grad_max=1.27e-05
-  OK    uv_branch.global_context.2.bias               grad_mean=4.70e-05 grad_max=8.37e-05
-  OK    uv_branch.net.0.weight                        grad_mean=6.09e-07 grad_max=3.66e-06
-  OK    uv_branch.net.0.bias                          grad_mean=4.33e-05 grad_max=1.02e-04
-  OK    uv_branch.net.2.weight                        grad_mean=4.30e-06 grad_max=3.65e-05
-  OK    uv_branch.net.2.bias                          grad_mean=1.70e-04 grad_max=5.83e-04
-  OK    uv_branch.net.4.weight                        grad_mean=4.77e-03 grad_max=1.59e-02
-  OK    uv_branch.net.4.bias                          grad_mean=2.65e-01 grad_max=3.94e-01
+  OK    y_branch.proj_in.0.weight                     grad_mean=4.55e-05 grad_max=3.12e-04
+  OK    y_branch.spatial_block.0.block.0.weight       grad_mean=7.55e-07 grad_max=1.74e-05
+  OK    y_branch.spatial_block.0.block.2.weight       grad_mean=1.15e-06 grad_max=7.51e-06
+  OK    y_branch.spatial_block.0.block.4.weight       grad_mean=1.84e-06 grad_max=4.45e-05
+  OK    y_branch.spatial_block.1.block.0.weight       grad_mean=7.03e-07 grad_max=1.47e-05
+  OK    y_branch.spatial_block.1.block.2.weight       grad_mean=1.11e-06 grad_max=8.09e-06
+  OK    y_branch.spatial_block.1.block.4.weight       grad_mean=1.73e-06 grad_max=5.51e-05
+  OK    y_branch.fft_block.mlp.0.weight               grad_mean=2.78e-09 grad_max=1.69e-08
+  OK    y_branch.fft_block.mlp.2.weight               grad_mean=1.68e-08 grad_max=3.10e-07
+  OK    y_branch.fft_block.mlp.2.bias                 grad_mean=8.78e-06 grad_max=7.54e-05
+  OK    y_branch.proj_out.weight                      grad_mean=1.44e-03 grad_max=8.92e-03
+  OK    y_branch.proj_out.bias                        grad_mean=2.35e-02 grad_max=4.46e-02
+  OK    y_branch.aa_conv.weight                       grad_mean=1.79e-02 grad_max=2.39e-02
+  OK    uv_branch.y_proj.weight                       grad_mean=3.95e-06 grad_max=2.97e-05
+  OK    uv_branch.global_context.0.weight             grad_mean=7.99e-09 grad_max=4.90e-08
+  OK    uv_branch.global_context.0.bias               grad_mean=1.33e-07 grad_max=4.06e-07
+  OK    uv_branch.global_context.2.weight             grad_mean=5.87e-06 grad_max=5.05e-05
+  OK    uv_branch.global_context.2.bias               grad_mean=8.57e-05 grad_max=2.14e-04
+  OK    uv_branch.smoother.0.weight                   grad_mean=5.13e-06 grad_max=4.58e-05
+  OK    uv_branch.smoother.1.weight                   grad_mean=5.45e-06 grad_max=2.30e-05
+  OK    uv_branch.smoother.3.weight                   grad_mean=2.53e-03 grad_max=1.69e-02
+  OK    uv_branch.smoother.3.bias                     grad_mean=2.66e-01 grad_max=3.97e-01
+  OK    uv_branch.hf_injector.0.weight                grad_mean=4.79e-07 grad_max=9.22e-07
+  OK    uv_branch.hf_injector.2.weight                grad_mean=1.61e-04 grad_max=3.91e-04
+  OK    uv_branch.hf_injector.2.bias                  grad_mean=3.90e-03 grad_max=4.39e-03
 
-Summary: 24/24 params alive, 0 dead, 0 NaN
+Summary: 25/25 params alive, 0 dead, 0 NaN
 ALL PARAMS HAVE HEALTHY GRADIENTS!

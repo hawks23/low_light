@@ -3,78 +3,102 @@ import torch.nn as nn
 
 class UVBranch(nn.Module):
     """
-    UV Branch: Lightweight Y-guided chroma stabilization.
+    UV Branch: Y-Guided High-Frequency Re-injection.
+    Uses dilated depthwise convolutions for artifact smoothing (moiré/checkerboard)
+    and pristine Y-edges to explicitly reinject high-frequency color without bleeding.
     """
-    def __init__(self, uv_channels: int = 8, y_feat_channels: int = 48):
+    def __init__(self, uv_channels: int = 16, y_feat_channels: int = 48):
         super(UVBranch, self).__init__()
         
-        # We project the Y features down to a small number of channels 
-        # to keep the overall parameter count well under 80K
+        # 1. Project rich Y-features down to extract geometric guidance
         projected_y_channels = 8
         self.y_proj = nn.Conv2d(y_feat_channels, projected_y_channels, kernel_size=1, bias=False)
         
-        # Input channels: U(1) + V(1) + projected_Y_features(8) = 10
-        # Output channels: delta_U(1) + delta_V(1) = 2
+        # 2. Global Color Cast Fix (< 200 params)
+        # Input: U(1) + V(1) + Y_proj(8) = 10
         in_channels = 2 + projected_y_channels
-        
-        # Global context path to fix image-wide color casts (< 200 params)
         self.global_pool = nn.AdaptiveAvgPool2d(1)
         self.global_context = nn.Sequential(
             nn.Conv2d(in_channels, uv_channels, kernel_size=1, bias=True),
             nn.GELU(),
             nn.Conv2d(uv_channels, in_channels, kernel_size=1, bias=True)
         )
-        # Init color shift to near-zero so it doesn't destabilize early training,
-        # but using small random weights to keep the gradient path alive.
-        with torch.no_grad():
-            nn.init.normal_(self.global_context[-1].weight, mean=0.0, std=0.001)
-            nn.init.zeros_(self.global_context[-1].bias)
         
-        self.net = nn.Sequential(
-            # Standard Conv 3x3 (in_channels -> uv_channels)
-            nn.Conv2d(in_channels, uv_channels, kernel_size=3, stride=1, padding=1, bias=True),
+        # 3. Artifact Smoothing (Moiré & Checkerboard destruction)
+        # Uses Dilated Depthwise Convs to get a 5x5 receptive field super cheaply.
+        self.smoother = nn.Sequential(
+            # Expand to uv_channels
+            nn.Conv2d(in_channels, uv_channels, kernel_size=1, bias=False),
+            # Dilated Depthwise (spatially smooths U and V independently using Y geometry)
+            nn.Conv2d(uv_channels, uv_channels, kernel_size=3, padding=2, dilation=2, groups=uv_channels, bias=False),
             nn.GELU(),
-            
-            # Standard Conv 3x3 (uv_channels -> uv_channels)
-            nn.Conv2d(uv_channels, uv_channels, kernel_size=3, stride=1, padding=1, bias=True),
-            nn.GELU(),
-            
-            # Final Conv 1x1 (uv_channels -> 2)
-            nn.Conv2d(uv_channels, 2, kernel_size=1, stride=1, padding=0, bias=True)
+            # Compress to 2 channels (smoothed delta_u, delta_v)
+            nn.Conv2d(uv_channels, 2, kernel_size=1, bias=True)
         )
         
-        # Near-identity init: small random weights allow gradient flow,
-        # bias stays zero so delta_u ≈ 0, delta_v ≈ 0 at init
-        with torch.no_grad():
-            nn.init.normal_(self.net[-1].weight, mean=0.0, std=0.001)
-            nn.init.zeros_(self.net[-1].bias)
+        # 4. High-Frequency Edge Extract & Inject (SpADE/AdaIN style)
+        # Takes the perfect high-freq Y-edges and generates spatial multipliers for original U/V
+        self.hf_injector = nn.Sequential(
+            nn.Conv2d(1, 8, kernel_size=1, bias=False),
+            nn.GELU(),
+            nn.Conv2d(8, 2, kernel_size=1, bias=True)
+        )
 
-    def forward(self, u: torch.Tensor, v: torch.Tensor, y_features: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        with torch.no_grad():
+            # Init global bias near zero
+            nn.init.normal_(self.global_context[-1].weight, mean=0.0, std=0.001)
+            nn.init.zeros_(self.global_context[-1].bias)
+            
+            # Init smoother near zero to act as identity
+            nn.init.normal_(self.smoother[-1].weight, mean=0.0, std=0.001)
+            nn.init.zeros_(self.smoother[-1].bias)
+            
+            # Init HF injector near zero
+            nn.init.normal_(self.hf_injector[-1].weight, mean=0.0, std=0.001)
+            nn.init.zeros_(self.hf_injector[-1].bias)
+
+    def extract_high_frequencies(self, y_enh: torch.Tensor) -> torch.Tensor:
+        """Deterministic, zero-param Laplacian-style high frequency extraction."""
+        # Simple cross-shaped Laplacian kernel to find sharp edges
+        kernel = torch.tensor([[[[0.0, -1.0, 0.0],
+                                 [-1.0, 4.0, -1.0],
+                                 [0.0, -1.0, 0.0]]]], device=y_enh.device, dtype=y_enh.dtype)
+        # Pad to keep spatial dimensions identical
+        y_hf = torch.nn.functional.conv2d(y_enh, kernel, padding=1)
+        return y_hf
+
+    def forward(self, u: torch.Tensor, v: torch.Tensor, y_features: torch.Tensor, y_enh: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Inputs: 
         - u, v: Original U, V channels [B, 1, H, W]
         - y_features: Spatial features from Y branch [B, C_y, H, W]
-        Returns:
-        - u_enh, v_enh: Enhanced U and V channels [B, 1, H, W]
+        - y_enh: The fully completed, enhanced luminance map [B, 1, H, W]
         """
-        # Project Y features to save parameters
-        y_proj = self.y_proj(y_features)  # [B, 8, H, W]
+        # --- Phase 1: Guided Global Color Cast Fix ---
+        y_proj = self.y_proj(y_features)              # [B, 8, H, W]
+        features = torch.cat([u, v, y_proj], dim=1)   # [B, 10, H, W]
         
-        # Concatenate inputs along channel dimension: [1] + [1] + [8] = [10]
-        features = torch.cat([u, v, y_proj], dim=1)  # [B, 10, H, W]
+        global_feat = self.global_pool(features)                 
+        color_shift = self.global_context(global_feat)           
+        features = features + color_shift                        
         
-        # Extract global color prior and broadcast-add it back as a spatial shift
-        global_feat = self.global_pool(features)                 # [B, 10, 1, 1]
-        color_shift = self.global_context(global_feat)           # [B, 10, 1, 1]
-        features = features + color_shift                        # [B, 10, H, W]
-        
-        # Forward pass
-        deltas = self.net(features)  # [B, 2, H, W]
-        
+        # --- Phase 2: Artifact Smoothing ---
+        # Dilated convolutions smear out moiré artifacts and checkerboards
+        deltas = self.smoother(features)              # [B, 2, H, W]
         delta_u, delta_v = torch.split(deltas, 1, dim=1)
         
-        # Residual reconstruction
-        u_enh = u + delta_u
-        v_enh = v + delta_v
+        u_smooth = u + delta_u
+        v_smooth = v + delta_v
         
-        return u_enh, v_enh
+        # --- Phase 3 & 4: HF Edge Extraction & Re-injection ---
+        y_hf = self.extract_high_frequencies(y_enh)   # [B, 1, H, W] - Pristine sharp edges
+        
+        # Generate explicit spatial attention maps for high-frequency details
+        hf_gamma = self.hf_injector(y_hf)             # [B, 2, H, W]
+        gamma_u, gamma_v = torch.split(hf_gamma, 1, dim=1)
+        
+        # Multiply original high-res color by the edge weights, and add to the smoothed base
+        u_final = u_smooth + (u * gamma_u)
+        v_final = v_smooth + (v * gamma_v)
+        
+        return u_final, v_final

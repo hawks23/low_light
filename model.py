@@ -47,8 +47,8 @@ class LightweightDarkIR(nn.Module):
         #    Returns enhanced Y and the rich spatial feature map for the UV branch
         y_enh, y_features = self.y_branch(y)
         
-        # 3. Chroma correction (guided by Y branch features)
-        u_enh, v_enh = self.uv_branch(u, v, y_features)
+        # 3. Chroma correction (guided by Y branch features and explicit high-freq Y edges)
+        u_enh, v_enh = self.uv_branch(u, v, y_features, y_enh)
         
         # 4. Convert enhanced YUV back to RGB
         #    The Y and UV branches already have residual connections,
